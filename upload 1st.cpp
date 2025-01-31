@@ -65,11 +65,6 @@ int main() {
 
     cout << "So luong nguoi choi: " << players.size() << endl;
 
-    int numRounds;
-    cout << "Nhap so van bai da choi: ";
-    cin >> numRounds;
-    cin.ignore();
-
     unordered_map<string, unordered_map<string, int>> debts;
     for (const auto &player : players) {
         for (const auto &other : players) {
@@ -79,68 +74,40 @@ int main() {
         }
     }
 
-    for (int roundNum = 1; roundNum <= numRounds; ++roundNum) {
-        cout << "\nNhap thong tin cho van " << roundNum << ":\n";
+    // Nhap so lan dung thu hạng cho moi nguoi
+    for (const auto& player : players) {
+        int first, second, third, fourth;
+        cout << "Nhap so lan " << player << " dung thu 1: ";
+        cin >> first;
+        cout << "Nhap so lan " << player << " dung thu 2: ";
+        cin >> second;
+        cout << "Nhap so lan " << player << " dung thu 3: ";
+        cin >> third;
+        cout << "Nhap so lan " << player << " dung thu 4: ";
+        cin >> fourth;
 
-        vector<string> selectedPlayers(4);
-        while (true) {
-            cout << "Chon 4 nguoi choi (cach nhau boi dau phay): ";
-            getline(cin, input);
-            size_t pos;
-            int count = 0;
-            while ((pos = input.find(",")) != string::npos && count < 4) {
-                selectedPlayers[count++] = input.substr(0, pos);
-                input.erase(0, pos + 1);
-            }
-            selectedPlayers[count++] = input;
+        // Cap nhat no dua tren thu tu
+        debts[players[3]][players[0]] += 2000 * first; // 4th owes 2000 to 1st
+        debts[players[2]][players[1]] += 1000 * second; // 3rd owes 1000 to 2nd
+    }
+    cin.ignore();
 
-            for (auto &player : selectedPlayers) {
-                player.erase(remove(player.begin(), player.end(), ' '), player.end());
-            }
-
-            if (selectedPlayers.size() == 4 && all_of(selectedPlayers.begin(), selectedPlayers.end(), [&](const string &p) {
-                return find(players.begin(), players.end(), p) != players.end();
-            })) {
-                break;
-            }
-            cout << "Vui long chon dung 4 nguoi.\n";
-        }
-
-        vector<string> positions(4);
-        cout << "Nhap thu tu ve nhat, nhi, ba, tu:\n";
-        for (int i = 0; i < 4; ++i) {
-            while (true) {
-                cout << "Nguoi ve " << (i + 1) << ": ";
-                getline(cin, positions[i]);
-                positions[i].erase(remove(positions[i].begin(), positions[i].end(), ' '), positions[i].end());
-
-                if (find(selectedPlayers.begin(), selectedPlayers.end(), positions[i]) != selectedPlayers.end() &&
-                    count(positions.begin(), positions.end(), positions[i]) == 1) {
-                    break;
-                }
-                cout << "Nguoi choi khong hop le hoac da nhap truoc.\n";
-            }
-        }
-
-        debts[positions[3]][positions[0]] += 2000; // 4th owes 2000 to 1st
-        debts[positions[2]][positions[1]] += 1000; // 3rd owes 1000 to 2nd
-
-        // Nhap thong tin ve nguoi chat heo va nguoi bi chat heo
-        string chopper;
-        cout << "Ai la nguoi chat heo (bo qua neu khong co): ";
-        getline(cin, chopper);
-        chopper.erase(remove(chopper.begin(), chopper.end(), ' '), chopper.end());
-        if (!chopper.empty()) {
-            string victim;
-            cout << "Ai bi chat heo: ";
-            getline(cin, victim);
-            victim.erase(remove(victim.begin(), victim.end(), ' '), victim.end());
-            if (find(selectedPlayers.begin(), selectedPlayers.end(), victim) != selectedPlayers.end() &&
-                find(selectedPlayers.begin(), selectedPlayers.end(), chopper) != selectedPlayers.end()) {
+    // Nhap thong tin ve nguoi chat heo cho tung nguoi
+    for (const auto& player : players) {
+        string victim;
+        cout << "Ai bi chat heo (bo qua neu khong co) cho " << player << ": ";
+        getline(cin, victim);
+        victim.erase(remove(victim.begin(), victim.end(), ' '), victim.end());
+        if (!victim.empty()) {
+            string chopper;
+            cout << "Ai la nguoi chat heo: ";
+            getline(cin, chopper);
+            chopper.erase(remove(chopper.begin(), chopper.end(), ' '), chopper.end());
+            if (find(players.begin(), players.end(), victim) != players.end() &&
+                find(players.begin(), players.end(), chopper) != players.end()) {
                 cout << "Heo den (1) hay heo do (2): ";
                 int pigType;
                 cin >> pigType;
-                cin.ignore();
                 if (pigType == 1) {
                     debts[victim][chopper] += 1000;
                 } else if (pigType == 2) {
@@ -150,20 +117,27 @@ int main() {
         }
 
         string skunkedPlayer;
-        cout << "Ai thui heo (bo qua neu khong co): ";
+        cout << "Ai la nguoi thui heo (bo qua neu khong co) cho " << player << ": ";
         getline(cin, skunkedPlayer);
         skunkedPlayer.erase(remove(skunkedPlayer.begin(), skunkedPlayer.end(), ' '), skunkedPlayer.end());
-        if (!skunkedPlayer.empty() && find(selectedPlayers.begin(), selectedPlayers.end(), skunkedPlayer) != selectedPlayers.end()) {
-            cout << "Heo den (1) hay heo do (2): ";
-            int pigType;
-            cin >> pigType;
-            cin.ignore();
-            if (pigType == 1) {
-                debts[skunkedPlayer][positions[0]] += 1000;
-            } else if (pigType == 2) {
-                debts[skunkedPlayer][positions[0]] += 2000;
+        if (!skunkedPlayer.empty()) {
+            string firstPlayer;
+            cout << "Ai la nguoi ve nhat: ";
+            getline(cin, firstPlayer);
+            firstPlayer.erase(remove(firstPlayer.begin(), firstPlayer.end(), ' '), firstPlayer.end());
+            if (find(players.begin(), players.end(), firstPlayer) != players.end() &&
+                find(players.begin(), players.end(), skunkedPlayer) != players.end()) {
+                cout << "Heo den (1) hay heo do (2): ";
+                int pigType;
+                cin >> pigType;
+                if (pigType == 1) {
+                    debts[firstPlayer][skunkedPlayer] += 1000;
+                } else if (pigType == 2) {
+                    debts[firstPlayer][skunkedPlayer] += 2000;
+                }
             }
         }
+        cin.ignore(); // Để xử lý việc nhập dòng tiếp theo
     }
 
     // Tinh toan va hien thi ket qua can no
